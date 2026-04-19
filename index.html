@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Heirloom Attendance</title>
+  <link rel="icon" type="image/png" href="assets/heirloom-mark-cropped.png" />
+  <link rel="apple-touch-icon" href="assets/heirloom-mark-cropped.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── Reset & Base ─────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --slate:      #435563;
+      --slate-dark: #2e3d49;
+      --slate-light:#5a6f7e;
+      --orange:     #f36b21;
+      --orange-dark:#d45a14;
+      --cream:      #dedddb;
+      --cream-light:#f2f1ef;
+      --white:      #ffffff;
+      --text-dark:  #1e2b33;
+      --text-mid:   #435563;
+      --text-light: #7a8f9b;
+      --male-bg:    #e8f0f5;
+      --male-accent:#3b7bbf;
+      --female-bg:  #f7ece9;
+      --female-accent:#c4573e;
+      --radius:     12px;
+      --shadow:     0 2px 12px rgba(67,85,99,0.13);
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--cream-light);
+      font-family: 'Lato', 'Open Sans', sans-serif;
+      color: var(--text-dark);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ─── App Shell ────────────────────────────────────── */
+    #app {
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--cream-light);
+    }
+
+    /* ─── Header ────────────────────────────────────────── */
+    header {
+      background: var(--slate-dark);
+      padding: 18px 20px 14px;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.25);
+    }
+
+    header .logo-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+
+    header .logo-mark {
+      width: 102px;
+      height: 102px;
+      object-fit: contain;
+      display: block;
+    }
+
+    header h1 {
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--white);
+    }
+    header h1 span { color: var(--orange); }
+
+    header .subtitle {
+      font-size: 11px;
+      color: var(--cream);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: 0.75;
+    }
+
+    /* ─── Date Bar ──────────────────────────────────────── */
+    .date-bar {
+      background: var(--slate);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .date-bar label {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--cream);
+      white-space: nowrap;
+    }
+
+    .date-bar input[type="date"] {
+      flex: 1;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.12);
+      color: var(--white);
+      font-family: 'Lato', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      outline: none;
+      cursor: pointer;
+      -webkit-appearance: none;
+    }
+    .date-bar input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+      opacity: 0.7;
+    }
+
+    .service-select {
+      background: rgba(255,255,255,0.12);
+      border: none;
+      border-radius: 8px;
+      color: var(--white);
+      font-family: 'Lato', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 10px;
+      outline: none;
+      cursor: pointer;
+    }
+    .service-select option { color: var(--text-dark); background: white; }
+
+    /* ─── Scroll Area ───────────────────────────────────── */
+    main {
+      flex: 1;
+      padding: 16px 16px 120px;
+      overflow-y: auto;
+    }
+
+    /* ─── Section Cards ─────────────────────────────────── */
+    .section-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      margin-bottom: 14px;
+      overflow: hidden;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      background: var(--slate-dark);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-icon {
+      width: 4px;
+      height: 28px;
+      border-radius: 2px;
+      background: var(--orange);
+    }
+
+    .section-name {
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      color: var(--white);
+      text-transform: uppercase;
+    }
+
+    .section-badge {
+      background: var(--orange);
+      color: var(--white);
+      font-size: 13px;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 20px;
+      min-width: 36px;
+      text-align: center;
+    }
+
+    .section-body {
+      padding: 14px 16px 16px;
+    }
+
+    /* ─── Gender Rows ───────────────────────────────────── */
+    .gender-row {
+      display: flex;
+      align-items: center;
+      padding: 10px 14px;
+      border-radius: 10px;
+      margin-bottom: 8px;
+    }
+    .gender-row:last-child { margin-bottom: 0; }
+    .gender-row.male   { background: var(--male-bg); }
+    .gender-row.female { background: var(--female-bg); }
+
+    .gender-label {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .gender-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .male .gender-dot   { background: var(--male-accent); }
+    .female .gender-dot { background: var(--female-accent); }
+
+    .gender-text {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+    }
+    .male .gender-text   { color: var(--male-accent); }
+    .female .gender-text { color: var(--female-accent); }
+
+    /* ─── Counter ───────────────────────────────────────── */
+    .counter {
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+
+    .btn-count {
+      width: 40px;
+      height: 40px;
+      border: none;
+      border-radius: 10px;
+      font-size: 22px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.08s, opacity 0.1s;
+      user-select: none;
+      -webkit-user-select: none;
+      line-height: 1;
+    }
+    .btn-count:active { transform: scale(0.88); }
+
+    .btn-minus {
+      background: rgba(0,0,0,0.07);
+      color: var(--text-mid);
+      border-radius: 10px 0 0 10px;
+    }
+    .btn-plus {
+      border-radius: 0 10px 10px 0;
+    }
+    .male   .btn-plus { background: var(--male-accent);   color: white; }
+    .female .btn-plus { background: var(--female-accent); color: white; }
+
+    .count-display {
+      min-width: 52px;
+      height: 40px;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--text-dark);
+      border-top: 1px solid rgba(0,0,0,0.06);
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+
+    /* Section total row */
+    .section-total {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid var(--cream);
+    }
+    .section-total-label {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-light);
+    }
+    .section-total-value {
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--slate-dark);
+    }
+
+    /* ─── Summary Panel ─────────────────────────────────── */
+    .summary-panel {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+
+    .summary-header {
+      background: var(--slate-dark);
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .summary-header h2 {
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--white);
+    }
+
+    .summary-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .summary-table th {
+      background: var(--slate);
+      color: var(--cream);
+      font-size: 11px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      padding: 8px 16px;
+      text-align: left;
+      font-weight: 700;
+    }
+    .summary-table th:not(:first-child) { text-align: center; }
+
+    .summary-table td {
+      padding: 10px 16px;
+      font-size: 14px;
+      border-bottom: 1px solid var(--cream);
+    }
+    .summary-table td:not(:first-child) {
+      text-align: center;
+      font-weight: 700;
+    }
+    .summary-table tr:last-child td { border-bottom: none; }
+
+    .summary-table .section-label { font-weight: 700; color: var(--text-mid); }
+    .summary-table .male-val   { color: var(--male-accent); }
+    .summary-table .female-val { color: var(--female-accent); }
+    .summary-table .row-total  { color: var(--slate-dark); font-weight: 900; }
+
+    .grand-total-row td {
+      background: var(--slate-dark);
+      color: var(--white) !important;
+      font-size: 15px;
+      font-weight: 900 !important;
+      border-bottom: none !important;
+    }
+    .grand-total-row td:first-child {
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    /* ─── Notes ─────────────────────────────────────────── */
+    .notes-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+    .notes-card label {
+      display: block;
+      padding: 12px 18px 6px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-light);
+    }
+    .notes-card textarea {
+      width: 100%;
+      border: none;
+      outline: none;
+      padding: 6px 18px 14px;
+      font-family: 'Lato', sans-serif;
+      font-size: 14px;
+      color: var(--text-dark);
+      resize: none;
+      background: transparent;
+      line-height: 1.5;
+    }
+
+    /* ─── Submit Bar ─────────────────────────────────────── */
+    .submit-bar {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 480px;
+      background: var(--slate-dark);
+      padding: 14px 20px;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
+      z-index: 200;
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 16px;
+      background: var(--orange);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Lato', sans-serif;
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .btn-submit:hover   { background: var(--orange-dark); }
+    .btn-submit:active  { transform: scale(0.97); }
+    .btn-submit:disabled {
+      background: var(--slate-light);
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* ─── Toast ──────────────────────────────────────────── */
+    #toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-80px);
+      background: #1a2e1a;
+      color: #5dd55d;
+      padding: 12px 24px;
+      border-radius: 40px;
+      font-size: 14px;
+      font-weight: 700;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      z-index: 999;
+      transition: transform 0.3s ease;
+      white-space: nowrap;
+    }
+    #toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+    #toast.error {
+      background: #2e1a1a;
+      color: #e05555;
+    }
+
+    /* ─── Config modal ───────────────────────────────────── */
+    #config-btn {
+      position: absolute;
+      top: 14px;
+      right: 16px;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: var(--cream);
+      opacity: 0.75;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      padding: 6px 10px;
+      border-radius: 6px;
+    }
+    #config-btn:hover { opacity: 1; }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 500;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--white);
+      width: 100%;
+      max-width: 480px;
+      border-radius: 20px 20px 0 0;
+      padding: 24px 20px 40px;
+    }
+    .modal h3 {
+      font-size: 16px;
+      font-weight: 900;
+      color: var(--slate-dark);
+      margin-bottom: 16px;
+    }
+    .modal label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-light);
+      margin-bottom: 6px;
+    }
+    .modal input {
+      width: 100%;
+      border: 1.5px solid var(--cream);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-family: 'Lato', sans-serif;
+      font-size: 13px;
+      color: var(--text-dark);
+      outline: none;
+      margin-bottom: 16px;
+    }
+    .modal input:focus { border-color: var(--orange); }
+    .modal-btns {
+      display: flex;
+      gap: 10px;
+    }
+    .btn-save {
+      flex: 1;
+      padding: 12px;
+      background: var(--orange);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Lato', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-cancel {
+      padding: 12px 20px;
+      background: var(--cream);
+      color: var(--text-mid);
+      border: none;
+      border-radius: 10px;
+      font-family: 'Lato', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ── Header ── -->
+  <header>
+    <div class="logo-row">
+      <img src="assets/heirloom-mark-cropped.png" alt="Heirloom" class="logo-mark" />
+      <h1>Heirloom <span>Church</span></h1>
+    </div>
+    <div class="subtitle">Attendance Counter</div>
+    <button id="config-btn" title="Settings" onclick="openConfig()">Settings</button>
+  </header>
+
+  <!-- ── Date / Service Bar ── -->
+  <div class="date-bar">
+    <label>Sunday</label>
+    <select class="service-select" id="service-date" style="flex:1"></select>
+    <select class="service-select" id="service-time">
+      <option value="11am">11:00 AM</option>
+      <option value="6pm">6:00 PM</option>
+    </select>
+  </div>
+
+  <!-- ── Main Scroll Area ── -->
+  <main id="main-scroll">
+
+    <!-- Section: Gym -->
+    <div class="section-card" id="section-gym">
+      <div class="section-header">
+        <div class="section-title">
+          <div class="section-icon"></div>
+          <span class="section-name">Gym</span>
+        </div>
+        <div class="section-badge" id="badge-gym">0</div>
+      </div>
+      <div class="section-body">
+        <div class="gender-row male">
+          <div class="gender-label">
+            <div class="gender-dot"></div>
+            <span class="gender-text">Male</span>
+          </div>
+          <div class="counter">
+            <button class="btn-count btn-minus" onclick="decrement('gym','male')">−</button>
+            <div class="count-display" id="gym-male">0</div>
+            <button class="btn-count btn-plus" onclick="increment('gym','male')">+</button>
+          </div>
+        </div>
+        <div class="gender-row female">
+          <div class="gender-label">
+            <div class="gender-dot"></div>
+            <span class="gender-text">Female</span>
+          </div>
+          <div class="counter">
+            <button class="btn-count btn-minus" onclick="decrement('gym','female')">−</button>
+            <div class="count-display" id="gym-female">0</div>
+            <button class="btn-count btn-plus" onclick="increment('gym','female')">+</button>
+          </div>
+        </div>
+        <div class="section-total">
+          <span class="section-total-label">Section Total</span>
+          <span class="section-total-value" id="total-gym">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section: Kids -->
+    <div class="section-card" id="section-kids">
+      <div class="section-header">
+        <div class="section-title">
+          <div class="section-icon"></div>
+          <span class="section-name">Kids</span>
+        </div>
+        <div class="section-badge" id="badge-kids">0</div>
+      </div>
+      <div class="section-body">
+        <div class="gender-row male">
+          <div class="gender-label">
+            <div class="gender-dot"></div>
+            <span class="gender-text">Male</span>
+          </div>
+          <div class="counter">
+            <button class="btn-count btn-minus" onclick="decrement('kids','male')">−</button>
+            <div class="count-display" id="kids-male">0</div>
+            <button class="btn-count btn-plus" onclick="increment('kids','male')">+</button>
+          </div>
+        </div>
+        <div class="gender-row female">
+          <div class="gender-label">
+            <div class="gender-dot"></div>
+            <span class="gender-text">Female</span>
+          </div>
+          <div class="counter">
+            <button class="btn-count btn-minus" onclick="decrement('kids','female')">−</button>
+            <div class="count-display" id="kids-female">0</div>
+            <button class="btn-count btn-plus" onclick="increment('kids','female')">+</button>
+          </div>
+        </div>
+        <div class="section-total">
+          <span class="section-total-label">Section Total</span>
+          <span class="section-total-value" id="total-kids">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section: Littles -->
+    <div class="section-card" id="section-littles">
+      <div class="section-header">
+        <div class="section-title">
+          <div class="section-icon"></div>
+          <span class="section-name">Littles</span>
+        </div>
+        <div class="section-badge" id="badge-littles">0</div>
+      </div>
+      <div class="section-body">
+        <div class="gender-row male">
+          <div class="gender-label">
+            <div class="gender-dot"></div>
+            <span class="gender-text">Male</span>
+          </div>
+          <div class="counter">
+            <button class="btn-count btn-minus" onclick="decrement('littles','male')">−</button>
+            <div class="count-display" id="littles-male">0</div>
+            <button class="btn-count btn-plus" onclick="increment('littles','male')">+</button>
+          </div>
+        </div>
+        <div class="gender-row female">
+          <div class="gender-label">
+            <div class="gender-dot"></div>
+            <span class="gender-text">Female</span>
+          </div>
+          <div class="counter">
+            <button class="btn-count btn-minus" onclick="decrement('littles','female')">−</button>
+            <div class="count-display" id="littles-female">0</div>
+            <button class="btn-count btn-plus" onclick="increment('littles','female')">+</button>
+          </div>
+        </div>
+        <div class="section-total">
+          <span class="section-total-label">Section Total</span>
+          <span class="section-total-value" id="total-littles">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section: Babies -->
+    <div class="section-card" id="section-babies">
+      <div class="section-header">
+        <div class="section-title">
+          <div class="section-icon"></div>
+          <span class="section-name">Babies</span>
+        </div>
+        <div class="section-badge" id="badge-babies">0</div>
+      </div>
+      <div class="section-body">
+        <div class="gender-row male">
+          <div class="gender-label">
+            <div class="gender-dot"></div>
+            <span class="gender-text">Male</span>
+          </div>
+          <div class="counter">
+            <button class="btn-count btn-minus" onclick="decrement('babies','male')">−</button>
+            <div class="count-display" id="babies-male">0</div>
+            <button class="btn-count btn-plus" onclick="increment('babies','male')">+</button>
+          </div>
+        </div>
+        <div class="gender-row female">
+          <div class="gender-label">
+            <div class="gender-dot"></div>
+            <span class="gender-text">Female</span>
+          </div>
+          <div class="counter">
+            <button class="btn-count btn-minus" onclick="decrement('babies','female')">−</button>
+            <div class="count-display" id="babies-female">0</div>
+            <button class="btn-count btn-plus" onclick="increment('babies','female')">+</button>
+          </div>
+        </div>
+        <div class="section-total">
+          <span class="section-total-label">Section Total</span>
+          <span class="section-total-value" id="total-babies">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Summary ── -->
+    <div class="summary-panel">
+      <div class="summary-header">
+        <h2>Attendance Summary</h2>
+      </div>
+      <table class="summary-table">
+        <thead>
+          <tr>
+            <th>Section</th>
+            <th>Male</th>
+            <th>Female</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="section-label">Gym</td>
+            <td class="male-val" id="sum-gym-male">0</td>
+            <td class="female-val" id="sum-gym-female">0</td>
+            <td class="row-total" id="sum-gym-total">0</td>
+          </tr>
+          <tr>
+            <td class="section-label">Kids</td>
+            <td class="male-val" id="sum-kids-male">0</td>
+            <td class="female-val" id="sum-kids-female">0</td>
+            <td class="row-total" id="sum-kids-total">0</td>
+          </tr>
+          <tr>
+            <td class="section-label">Littles</td>
+            <td class="male-val" id="sum-littles-male">0</td>
+            <td class="female-val" id="sum-littles-female">0</td>
+            <td class="row-total" id="sum-littles-total">0</td>
+          </tr>
+          <tr>
+            <td class="section-label">Babies</td>
+            <td class="male-val" id="sum-babies-male">0</td>
+            <td class="female-val" id="sum-babies-female">0</td>
+            <td class="row-total" id="sum-babies-total">0</td>
+          </tr>
+          <tr class="grand-total-row">
+            <td>Grand Total</td>
+            <td id="sum-grand-male">0</td>
+            <td id="sum-grand-female">0</td>
+            <td id="sum-grand-total">0</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── Notes ── -->
+    <div class="notes-card">
+      <label for="notes">Notes (optional)</label>
+      <textarea id="notes" rows="3" placeholder="Any additional observations..."></textarea>
+    </div>
+
+  </main>
+
+  <!-- ── Submit Bar ── -->
+  <div class="submit-bar">
+    <button class="btn-submit" id="submit-btn" onclick="submitData()">
+      Submit Final Count
+    </button>
+  </div>
+
+</div><!-- /app -->
+
+<!-- ── Config Modal ── -->
+<div class="modal-overlay" id="config-modal">
+  <div class="modal">
+    <h3>Settings</h3>
+    <label>Google Sheets Webhook URL</label>
+    <input type="url" id="webhook-url-input" placeholder="https://script.google.com/macros/s/..." />
+    <label>Submitted By</label>
+    <input type="text" id="submitted-by-input" placeholder="Your name" />
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeConfig()">Cancel</button>
+      <button class="btn-save" onclick="saveConfig()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Toast ── -->
+<div id="toast"></div>
+
+<script>
+  // ── State ──────────────────────────────────────────────
+  const SECTIONS = ['gym', 'kids', 'littles', 'babies'];
+  const counts = {};
+  SECTIONS.forEach(s => counts[s] = { male: 0, female: 0 });
+
+  // ── Init Sunday dropdown ───────────────────────────────
+  const pad = n => String(n).padStart(2, '0');
+  (function populateSundays() {
+    const sel = document.getElementById('service-date');
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    // Find nearest upcoming Sunday (or today if Sunday)
+    const upcoming = new Date(today);
+    upcoming.setDate(upcoming.getDate() + ((7 - upcoming.getDay()) % 7));
+
+    // Build list: 4 past Sundays + every Sunday through end of 2026
+    const sundays = [];
+    const start = new Date(upcoming);
+    start.setDate(upcoming.getDate() - 28); // 4 past Sundays
+    const end = new Date(2026, 11, 31); // Dec 31, 2026
+    const cursor = new Date(start);
+    while (cursor <= end) {
+      sundays.push(new Date(cursor));
+      cursor.setDate(cursor.getDate() + 7);
+    }
+
+    const fmt = d => `${pad(d.getMonth()+1)}/${pad(d.getDate())}/${d.getFullYear()}`;
+    const iso = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+
+    sundays.forEach(d => {
+      const opt = document.createElement('option');
+      opt.value = iso(d);
+      opt.textContent = fmt(d);
+      if (d.getTime() === upcoming.getTime()) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  })();
+
+  // ── Config ─────────────────────────────────────────────
+  function getConfig() {
+    return {
+      webhookUrl:  localStorage.getItem('heirloom_webhook') || '',
+      submittedBy: localStorage.getItem('heirloom_user')    || ''
+    };
+  }
+
+  function openConfig() {
+    const cfg = getConfig();
+    document.getElementById('webhook-url-input').value  = cfg.webhookUrl;
+    document.getElementById('submitted-by-input').value = cfg.submittedBy;
+    document.getElementById('config-modal').classList.add('open');
+  }
+  function closeConfig() {
+    document.getElementById('config-modal').classList.remove('open');
+  }
+  function saveConfig() {
+    localStorage.setItem('heirloom_webhook', document.getElementById('webhook-url-input').value.trim());
+    localStorage.setItem('heirloom_user',    document.getElementById('submitted-by-input').value.trim());
+    closeConfig();
+    showToast('Settings saved');
+  }
+
+  // Close modal on overlay click
+  document.getElementById('config-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeConfig();
+  });
+
+  // ── Counter logic ───────────────────────────────────────
+  function increment(section, gender) {
+    counts[section][gender]++;
+    updateDisplay(section);
+    pulse(section, gender);
+  }
+
+  function decrement(section, gender) {
+    if (counts[section][gender] <= 0) return;
+    counts[section][gender]--;
+    updateDisplay(section);
+  }
+
+  function updateDisplay(section) {
+    const m = counts[section].male;
+    const f = counts[section].female;
+    const t = m + f;
+
+    document.getElementById(`${section}-male`).textContent   = m;
+    document.getElementById(`${section}-female`).textContent = f;
+    document.getElementById(`total-${section}`).textContent  = t;
+    document.getElementById(`badge-${section}`).textContent  = t;
+
+    // Update summary table row
+    document.getElementById(`sum-${section}-male`).textContent   = m;
+    document.getElementById(`sum-${section}-female`).textContent = f;
+    document.getElementById(`sum-${section}-total`).textContent  = t;
+
+    updateGrandTotal();
+  }
+
+  function updateGrandTotal() {
+    let gm = 0, gf = 0;
+    SECTIONS.forEach(s => { gm += counts[s].male; gf += counts[s].female; });
+    document.getElementById('sum-grand-male').textContent   = gm;
+    document.getElementById('sum-grand-female').textContent = gf;
+    document.getElementById('sum-grand-total').textContent  = gm + gf;
+  }
+
+  function pulse(section, gender) {
+    const el = document.getElementById(`${section}-${gender}`);
+    el.style.transform = 'scale(1.3)';
+    el.style.transition = 'transform 0.1s';
+    setTimeout(() => { el.style.transform = 'scale(1)'; }, 150);
+  }
+
+  // ── Submit ─────────────────────────────────────────────
+  async function submitData() {
+    const cfg = getConfig();
+    if (!cfg.webhookUrl) {
+      openConfig();
+      showToast('Set your webhook URL first', true);
+      return;
+    }
+
+    const date        = document.getElementById('service-date').value;
+    const serviceTime = document.getElementById('service-time').value;
+    const notes       = document.getElementById('notes').value;
+    const timestamp   = new Date().toISOString();
+
+    const payload = {
+      timestamp,
+      date,
+      service_time:    serviceTime,
+      submitted_by:    cfg.submittedBy || 'Unknown',
+      gym_male:        counts.gym.male,
+      gym_female:      counts.gym.female,
+      gym_total:       counts.gym.male + counts.gym.female,
+      kids_male:       counts.kids.male,
+      kids_female:     counts.kids.female,
+      kids_total:      counts.kids.male + counts.kids.female,
+      littles_male:    counts.littles.male,
+      littles_female:  counts.littles.female,
+      littles_total:   counts.littles.male + counts.littles.female,
+      babies_male:     counts.babies.male,
+      babies_female:   counts.babies.female,
+      babies_total:    counts.babies.male + counts.babies.female,
+      grand_male:      SECTIONS.reduce((a,s) => a + counts[s].male, 0),
+      grand_female:    SECTIONS.reduce((a,s) => a + counts[s].female, 0),
+      grand_total:     SECTIONS.reduce((a,s) => a + counts[s].male + counts[s].female, 0),
+      notes
+    };
+
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.textContent = 'Submitting...';
+
+    try {
+      // Use no-cors for Google Apps Script (it returns opaque response)
+      await fetch(cfg.webhookUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      showToast('Submitted — attendance logged');
+      btn.textContent = 'Submitted';
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.textContent = 'Submit Final Count';
+      }, 3000);
+
+    } catch (err) {
+      showToast('Submit failed — check webhook URL', true);
+      btn.disabled = false;
+      btn.textContent = 'Submit Final Count';
+    }
+  }
+
+  // ── Toast ──────────────────────────────────────────────
+  let toastTimer;
+  function showToast(msg, isError = false) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = isError ? 'error show' : 'show';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.className = ''; }, 3000);
+  }
+</script>
+</body>
+</html>
