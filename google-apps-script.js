@@ -26,7 +26,7 @@
 // If this script is STANDALONE (not bound to a sheet), paste your Sheet ID here.
 // Find the ID in the sheet URL: docs.google.com/spreadsheets/d/[THIS_PART]/edit
 // Leave empty if the script is bound to a sheet (via Extensions → Apps Script).
-const SPREADSHEET_ID = '';
+const SPREADSHEET_ID = '1lN3LcCrfVFKJp7CDhJ3kSWFjPoodc-aNX53LPP_Bk88';
 
 const SHEET_NAME = 'Attendance';
 
