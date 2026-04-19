@@ -15,7 +15,7 @@
  *
  * SHEET COLUMNS (auto-created on first submit):
  * Timestamp | Date | Submitted By |
- * Gym M | Gym F | Gym Total |
+ * Main Service M | Main Service F | Main Service Total |
  * Kids M | Kids F | Kids Total |
  * Littles M | Littles F | Littles Total |
  * Babies M | Babies F | Babies Total |
@@ -54,7 +54,7 @@ function logAttendance(data) {
     sheet = ss.insertSheet(SHEET_NAME);
     sheet.appendRow([
       'Timestamp', 'Date', 'Submitted By',
-      'Gym Male', 'Gym Female', 'Gym Total',
+      'Main Service Male', 'Main Service Female', 'Main Service Total',
       'Kids Male', 'Kids Female', 'Kids Total',
       'Littles Male', 'Littles Female', 'Littles Total',
       'Babies Male', 'Babies Female', 'Babies Total',

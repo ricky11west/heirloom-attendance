@@ -599,7 +599,7 @@
       <div class="section-header">
         <div class="section-title">
           <div class="section-icon"></div>
-          <span class="section-name">Gym</span>
+          <span class="section-name">Main Service</span>
         </div>
         <div class="section-badge" id="badge-gym">0</div>
       </div>
@@ -766,7 +766,7 @@
         </thead>
         <tbody>
           <tr>
-            <td class="section-label">Gym</td>
+            <td class="section-label">Main Service</td>
             <td class="male-val" id="sum-gym-male">0</td>
             <td class="female-val" id="sum-gym-female">0</td>
             <td class="row-total" id="sum-gym-total">0</td>
@@ -875,9 +875,11 @@
   })();
 
   // ── Config ─────────────────────────────────────────────
+  const DEFAULT_WEBHOOK = 'https://script.google.com/macros/s/AKfycby7H4795kk15dqo544mu5OiF-xgtpmz7y9IeEUpc1d6vf12FaIUeJh643i7U9mFvspu/exec';
+
   function getConfig() {
     return {
-      webhookUrl:  localStorage.getItem('heirloom_webhook') || '',
+      webhookUrl:  localStorage.getItem('heirloom_webhook') || DEFAULT_WEBHOOK,
       submittedBy: localStorage.getItem('heirloom_user')    || ''
     };
   }
