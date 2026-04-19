@@ -585,14 +585,10 @@
     <button id="config-btn" title="Settings" onclick="openConfig()">Settings</button>
   </header>
 
-  <!-- ── Date / Service Bar ── -->
+  <!-- ── Date Bar ── -->
   <div class="date-bar">
     <label>Sunday</label>
     <select class="service-select" id="service-date" style="flex:1"></select>
-    <select class="service-select" id="service-time">
-      <option value="11am">11:00 AM</option>
-      <option value="6pm">6:00 PM</option>
-    </select>
   </div>
 
   <!-- ── Main Scroll Area ── -->
@@ -962,15 +958,13 @@
       return;
     }
 
-    const date        = document.getElementById('service-date').value;
-    const serviceTime = document.getElementById('service-time').value;
-    const notes       = document.getElementById('notes').value;
-    const timestamp   = new Date().toISOString();
+    const date      = document.getElementById('service-date').value;
+    const notes     = document.getElementById('notes').value;
+    const timestamp = new Date().toISOString();
 
     const payload = {
       timestamp,
       date,
-      service_time:    serviceTime,
       submitted_by:    cfg.submittedBy || 'Unknown',
       gym_male:        counts.gym.male,
       gym_female:      counts.gym.female,

@@ -14,7 +14,7 @@
  * 6. Paste that URL into the app's ⚙ Settings
  *
  * SHEET COLUMNS (auto-created on first submit):
- * Timestamp | Date | Service | Submitted By |
+ * Timestamp | Date | Submitted By |
  * Gym M | Gym F | Gym Total |
  * Kids M | Kids F | Kids Total |
  * Littles M | Littles F | Littles Total |
@@ -53,7 +53,7 @@ function logAttendance(data) {
   if (!sheet) {
     sheet = ss.insertSheet(SHEET_NAME);
     sheet.appendRow([
-      'Timestamp', 'Date', 'Service', 'Submitted By',
+      'Timestamp', 'Date', 'Submitted By',
       'Gym Male', 'Gym Female', 'Gym Total',
       'Kids Male', 'Kids Female', 'Kids Total',
       'Littles Male', 'Littles Female', 'Littles Total',
@@ -63,7 +63,7 @@ function logAttendance(data) {
     ]);
 
     // Style header row
-    const header = sheet.getRange(1, 1, 1, 20);
+    const header = sheet.getRange(1, 1, 1, 19);
     header.setBackground('#435563');
     header.setFontColor('#ffffff');
     header.setFontWeight('bold');
@@ -73,7 +73,6 @@ function logAttendance(data) {
   sheet.appendRow([
     data.timestamp    || new Date().toISOString(),
     data.date         || '',
-    data.service_time || '',
     data.submitted_by || '',
     data.gym_male     || 0,
     data.gym_female   || 0,
