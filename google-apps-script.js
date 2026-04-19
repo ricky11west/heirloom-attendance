@@ -22,12 +22,26 @@
  * Grand Male | Grand Female | Grand Total | Notes
  */
 
+// ── CONFIG ────────────────────────────────────────────────
+// If this script is STANDALONE (not bound to a sheet), paste your Sheet ID here.
+// Find the ID in the sheet URL: docs.google.com/spreadsheets/d/[THIS_PART]/edit
+// Leave empty if the script is bound to a sheet (via Extensions → Apps Script).
+const SPREADSHEET_ID = '';
+
 const SHEET_NAME = 'Attendance';
+
+function getSpreadsheet() {
+  if (SPREADSHEET_ID) return SpreadsheetApp.openById(SPREADSHEET_ID);
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (!ss) throw new Error('No active spreadsheet. Set SPREADSHEET_ID at top of script.');
+  return ss;
+}
 
 function doPost(e) {
   try {
     const data = JSON.parse(e.postData.contents);
     logAttendance(data);
+    sendTelegramSummary(data);
     return ContentService
       .createTextOutput(JSON.stringify({ success: true }))
       .setMimeType(ContentService.MimeType.JSON);
@@ -35,6 +49,53 @@ function doPost(e) {
     return ContentService
       .createTextOutput(JSON.stringify({ success: false, error: err.message }))
       .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+/**
+ * Sends an exec summary to Telegram on every submission.
+ * Set these in Apps Script → Project Settings → Script Properties:
+ *   TELEGRAM_BOT_TOKEN   — your bot token
+ *   TELEGRAM_CHAT_ID     — your user/chat ID
+ * If either is missing, this silently skips (doesn't break the submit).
+ */
+function sendTelegramSummary(data) {
+  const props = PropertiesService.getScriptProperties();
+  const token = props.getProperty('TELEGRAM_BOT_TOKEN');
+  const chatId = props.getProperty('TELEGRAM_CHAT_ID');
+  if (!token || !chatId) return;
+
+  const dateStr = data.date || 'unknown date';
+  const by      = data.submitted_by || 'Unknown';
+  const notes   = data.notes ? `\n\n*Notes:* ${data.notes}` : '';
+
+  const msg =
+    `*Heirloom Attendance — Submitted*\n` +
+    `📅 ${dateStr}\n` +
+    `👤 ${by}\n\n` +
+    `*Main Service:* ${data.gym_total} (M ${data.gym_male} / F ${data.gym_female})\n` +
+    `*Kids:* ${data.kids_total} (M ${data.kids_male} / F ${data.kids_female})\n` +
+    `*Littles:* ${data.littles_total} (M ${data.littles_male} / F ${data.littles_female})\n` +
+    `*Babies:* ${data.babies_total} (M ${data.babies_male} / F ${data.babies_female})\n\n` +
+    `*Grand Total: ${data.grand_total}*\n` +
+    `Male ${data.grand_male}  |  Female ${data.grand_female}` +
+    notes;
+
+  const url = `https://api.telegram.org/bot${token}/sendMessage`;
+  try {
+    UrlFetchApp.fetch(url, {
+      method: 'post',
+      contentType: 'application/json',
+      payload: JSON.stringify({
+        chat_id: chatId,
+        text: msg,
+        parse_mode: 'Markdown'
+      }),
+      muteHttpExceptions: true
+    });
+  } catch (err) {
+    // Don't break the submit flow if Telegram fails
+    console.error('Telegram send failed:', err);
   }
 }
 
@@ -46,7 +107,7 @@ function doGet(e) {
 }
 
 function logAttendance(data) {
-  const ss    = SpreadsheetApp.getActiveSpreadsheet();
+  const ss    = getSpreadsheet();
   let sheet   = ss.getSheetByName(SHEET_NAME);
 
   // Create sheet + header row if it doesn't exist
