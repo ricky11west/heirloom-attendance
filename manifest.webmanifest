@@ -1,0 +1,25 @@
+{
+  "name": "Heirloom Attendance",
+  "short_name": "Heirloom",
+  "description": "Heirloom Church attendance + volunteer counter",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#2e3d49",
+  "theme_color": "#2e3d49",
+  "icons": [
+    {
+      "src": "assets/heirloom-mark-cropped.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/heirloom-mark-cropped.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

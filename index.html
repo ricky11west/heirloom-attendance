@@ -2,8 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>Heirloom Attendance</title>
+
+  <!-- PWA: app feel, no Safari chrome, no double-tap zoom in standalone -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#2e3d49" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Heirloom" />
+
   <link rel="icon" type="image/png" href="assets/heirloom-mark-cropped.png" />
   <link rel="apple-touch-icon" href="assets/heirloom-mark-cropped.png" />
   <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
@@ -37,7 +46,19 @@
       font-family: 'Lato', 'Open Sans', sans-serif;
       color: var(--text-dark);
       -webkit-tap-highlight-color: transparent;
+      /* Lock scaling — kills Safari double-tap-zoom on rapid counter taps */
+      touch-action: manipulation;
+      -webkit-text-size-adjust: 100%;
+      overscroll-behavior-y: contain;
     }
+    /* Disable selection + callout on the whole app — feels like a native app, not a webpage */
+    #app {
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
+    /* Allow normal text selection inside the notes textarea only */
+    #notes { -webkit-user-select: text; user-select: text; }
 
     /* ─── App Shell ────────────────────────────────────── */
     #app {
@@ -249,8 +270,8 @@
     }
 
     .btn-count {
-      width: 40px;
-      height: 40px;
+      width: 44px;
+      height: 44px;
       border: none;
       border-radius: 10px;
       font-size: 22px;
@@ -263,6 +284,9 @@
       user-select: none;
       -webkit-user-select: none;
       line-height: 1;
+      /* Critical: kills double-tap-zoom on rapid taps in Safari */
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
     .btn-count:active { transform: scale(0.88); }
 
@@ -276,6 +300,12 @@
     }
     .male   .btn-plus { background: var(--male-accent);   color: white; }
     .female .btn-plus { background: var(--female-accent); color: white; }
+    .volunteer .btn-plus { background: var(--orange); color: white; }
+
+    /* Volunteer row — same shape as gender-row but slate/orange palette */
+    .gender-row.volunteer { background: #fdf3eb; }
+    .volunteer .gender-dot { background: var(--orange); }
+    .volunteer .gender-text { color: var(--orange-dark); }
 
     .count-display {
       min-width: 52px;
@@ -626,6 +656,17 @@
             <button class="btn-count btn-plus" onclick="increment('gym','female')">+</button>
           </div>
         </div>
+        <div class="gender-row volunteer">
+          <div class="gender-label">
+            <div class="gender-dot"></div>
+            <span class="gender-text">Volunteers</span>
+          </div>
+          <div class="counter">
+            <button class="btn-count btn-minus" onclick="decrement('gym','volunteer')">−</button>
+            <div class="count-display" id="gym-volunteer">0</div>
+            <button class="btn-count btn-plus" onclick="increment('gym','volunteer')">+</button>
+          </div>
+        </div>
         <div class="section-total">
           <span class="section-total-label">Section Total</span>
           <span class="section-total-value" id="total-gym">0</span>
@@ -663,6 +704,17 @@
             <button class="btn-count btn-minus" onclick="decrement('kids','female')">−</button>
             <div class="count-display" id="kids-female">0</div>
             <button class="btn-count btn-plus" onclick="increment('kids','female')">+</button>
+          </div>
+        </div>
+        <div class="gender-row volunteer">
+          <div class="gender-label">
+            <div class="gender-dot"></div>
+            <span class="gender-text">Volunteers</span>
+          </div>
+          <div class="counter">
+            <button class="btn-count btn-minus" onclick="decrement('kids','volunteer')">−</button>
+            <div class="count-display" id="kids-volunteer">0</div>
+            <button class="btn-count btn-plus" onclick="increment('kids','volunteer')">+</button>
           </div>
         </div>
         <div class="section-total">
@@ -704,6 +756,17 @@
             <button class="btn-count btn-plus" onclick="increment('littles','female')">+</button>
           </div>
         </div>
+        <div class="gender-row volunteer">
+          <div class="gender-label">
+            <div class="gender-dot"></div>
+            <span class="gender-text">Volunteers</span>
+          </div>
+          <div class="counter">
+            <button class="btn-count btn-minus" onclick="decrement('littles','volunteer')">−</button>
+            <div class="count-display" id="littles-volunteer">0</div>
+            <button class="btn-count btn-plus" onclick="increment('littles','volunteer')">+</button>
+          </div>
+        </div>
         <div class="section-total">
           <span class="section-total-label">Section Total</span>
           <span class="section-total-value" id="total-littles">0</span>
@@ -743,6 +806,17 @@
             <button class="btn-count btn-plus" onclick="increment('babies','female')">+</button>
           </div>
         </div>
+        <div class="gender-row volunteer">
+          <div class="gender-label">
+            <div class="gender-dot"></div>
+            <span class="gender-text">Volunteers</span>
+          </div>
+          <div class="counter">
+            <button class="btn-count btn-minus" onclick="decrement('babies','volunteer')">−</button>
+            <div class="count-display" id="babies-volunteer">0</div>
+            <button class="btn-count btn-plus" onclick="increment('babies','volunteer')">+</button>
+          </div>
+        </div>
         <div class="section-total">
           <span class="section-total-label">Section Total</span>
           <span class="section-total-value" id="total-babies">0</span>
@@ -759,8 +833,9 @@
         <thead>
           <tr>
             <th>Section</th>
-            <th>Male</th>
-            <th>Female</th>
+            <th>M</th>
+            <th>F</th>
+            <th>Vol</th>
             <th>Total</th>
           </tr>
         </thead>
@@ -769,30 +844,35 @@
             <td class="section-label">Main Service</td>
             <td class="male-val" id="sum-gym-male">0</td>
             <td class="female-val" id="sum-gym-female">0</td>
+            <td id="sum-gym-volunteer" style="color:var(--orange-dark)">0</td>
             <td class="row-total" id="sum-gym-total">0</td>
           </tr>
           <tr>
             <td class="section-label">Kids</td>
             <td class="male-val" id="sum-kids-male">0</td>
             <td class="female-val" id="sum-kids-female">0</td>
+            <td id="sum-kids-volunteer" style="color:var(--orange-dark)">0</td>
             <td class="row-total" id="sum-kids-total">0</td>
           </tr>
           <tr>
             <td class="section-label">Littles</td>
             <td class="male-val" id="sum-littles-male">0</td>
             <td class="female-val" id="sum-littles-female">0</td>
+            <td id="sum-littles-volunteer" style="color:var(--orange-dark)">0</td>
             <td class="row-total" id="sum-littles-total">0</td>
           </tr>
           <tr>
             <td class="section-label">Babies</td>
             <td class="male-val" id="sum-babies-male">0</td>
             <td class="female-val" id="sum-babies-female">0</td>
+            <td id="sum-babies-volunteer" style="color:var(--orange-dark)">0</td>
             <td class="row-total" id="sum-babies-total">0</td>
           </tr>
           <tr class="grand-total-row">
             <td>Grand Total</td>
             <td id="sum-grand-male">0</td>
             <td id="sum-grand-female">0</td>
+            <td id="sum-grand-volunteer">0</td>
             <td id="sum-grand-total">0</td>
           </tr>
         </tbody>
@@ -838,7 +918,25 @@
   // ── State ──────────────────────────────────────────────
   const SECTIONS = ['gym', 'kids', 'littles', 'babies'];
   const counts = {};
-  SECTIONS.forEach(s => counts[s] = { male: 0, female: 0 });
+  SECTIONS.forEach(s => counts[s] = { male: 0, female: 0, volunteer: 0 });
+
+  // ── Service worker — makes the app installable + work offline ──
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    });
+  }
+
+  // Belt-and-suspenders: kill iOS gesture-based pinch zoom even before install
+  document.addEventListener('gesturestart', (e) => e.preventDefault());
+  document.addEventListener('gesturechange', (e) => e.preventDefault());
+  // Kill double-tap-zoom even in Safari (before user installs to home screen)
+  let _lastTap = 0;
+  document.addEventListener('touchend', (e) => {
+    const now = Date.now();
+    if (now - _lastTap < 350) e.preventDefault();
+    _lastTap = now;
+  }, { passive: false });
 
   // ── Init Sunday dropdown ───────────────────────────────
   const pad = n => String(n).padStart(2, '0');
@@ -921,27 +1019,35 @@
   function updateDisplay(section) {
     const m = counts[section].male;
     const f = counts[section].female;
-    const t = m + f;
+    const v = counts[section].volunteer;
+    const t = m + f + v;
 
-    document.getElementById(`${section}-male`).textContent   = m;
-    document.getElementById(`${section}-female`).textContent = f;
-    document.getElementById(`total-${section}`).textContent  = t;
-    document.getElementById(`badge-${section}`).textContent  = t;
+    document.getElementById(`${section}-male`).textContent      = m;
+    document.getElementById(`${section}-female`).textContent    = f;
+    document.getElementById(`${section}-volunteer`).textContent = v;
+    document.getElementById(`total-${section}`).textContent     = t;
+    document.getElementById(`badge-${section}`).textContent     = t;
 
     // Update summary table row
-    document.getElementById(`sum-${section}-male`).textContent   = m;
-    document.getElementById(`sum-${section}-female`).textContent = f;
-    document.getElementById(`sum-${section}-total`).textContent  = t;
+    document.getElementById(`sum-${section}-male`).textContent      = m;
+    document.getElementById(`sum-${section}-female`).textContent    = f;
+    document.getElementById(`sum-${section}-volunteer`).textContent = v;
+    document.getElementById(`sum-${section}-total`).textContent     = t;
 
     updateGrandTotal();
   }
 
   function updateGrandTotal() {
-    let gm = 0, gf = 0;
-    SECTIONS.forEach(s => { gm += counts[s].male; gf += counts[s].female; });
-    document.getElementById('sum-grand-male').textContent   = gm;
-    document.getElementById('sum-grand-female').textContent = gf;
-    document.getElementById('sum-grand-total').textContent  = gm + gf;
+    let gm = 0, gf = 0, gv = 0;
+    SECTIONS.forEach(s => {
+      gm += counts[s].male;
+      gf += counts[s].female;
+      gv += counts[s].volunteer;
+    });
+    document.getElementById('sum-grand-male').textContent      = gm;
+    document.getElementById('sum-grand-female').textContent    = gf;
+    document.getElementById('sum-grand-volunteer').textContent = gv;
+    document.getElementById('sum-grand-total').textContent     = gm + gf + gv;
   }
 
   function pulse(section, gender) {
@@ -964,25 +1070,32 @@
     const notes     = document.getElementById('notes').value;
     const timestamp = new Date().toISOString();
 
+    const sectionTotal = (s) => counts[s].male + counts[s].female + counts[s].volunteer;
+
     const payload = {
       timestamp,
       date,
-      submitted_by:    cfg.submittedBy || 'Unknown',
-      gym_male:        counts.gym.male,
-      gym_female:      counts.gym.female,
-      gym_total:       counts.gym.male + counts.gym.female,
-      kids_male:       counts.kids.male,
-      kids_female:     counts.kids.female,
-      kids_total:      counts.kids.male + counts.kids.female,
-      littles_male:    counts.littles.male,
-      littles_female:  counts.littles.female,
-      littles_total:   counts.littles.male + counts.littles.female,
-      babies_male:     counts.babies.male,
-      babies_female:   counts.babies.female,
-      babies_total:    counts.babies.male + counts.babies.female,
-      grand_male:      SECTIONS.reduce((a,s) => a + counts[s].male, 0),
-      grand_female:    SECTIONS.reduce((a,s) => a + counts[s].female, 0),
-      grand_total:     SECTIONS.reduce((a,s) => a + counts[s].male + counts[s].female, 0),
+      submitted_by:       cfg.submittedBy || 'Unknown',
+      gym_male:           counts.gym.male,
+      gym_female:         counts.gym.female,
+      gym_volunteer:      counts.gym.volunteer,
+      gym_total:          sectionTotal('gym'),
+      kids_male:          counts.kids.male,
+      kids_female:        counts.kids.female,
+      kids_volunteer:     counts.kids.volunteer,
+      kids_total:         sectionTotal('kids'),
+      littles_male:       counts.littles.male,
+      littles_female:     counts.littles.female,
+      littles_volunteer:  counts.littles.volunteer,
+      littles_total:      sectionTotal('littles'),
+      babies_male:        counts.babies.male,
+      babies_female:      counts.babies.female,
+      babies_volunteer:   counts.babies.volunteer,
+      babies_total:       sectionTotal('babies'),
+      grand_male:         SECTIONS.reduce((a,s) => a + counts[s].male, 0),
+      grand_female:       SECTIONS.reduce((a,s) => a + counts[s].female, 0),
+      grand_volunteer:    SECTIONS.reduce((a,s) => a + counts[s].volunteer, 0),
+      grand_total:        SECTIONS.reduce((a,s) => a + sectionTotal(s), 0),
       notes
     };
 

@@ -15,11 +15,17 @@
  *
  * SHEET COLUMNS (auto-created on first submit):
  * Timestamp | Date | Submitted By |
- * Main Service M | Main Service F | Main Service Total |
- * Kids M | Kids F | Kids Total |
- * Littles M | Littles F | Littles Total |
- * Babies M | Babies F | Babies Total |
- * Grand Male | Grand Female | Grand Total | Notes
+ * Main Service M | Main Service F | Main Service Vol | Main Service Total |
+ * Kids M | Kids F | Kids Vol | Kids Total |
+ * Littles M | Littles F | Littles Vol | Littles Total |
+ * Babies M | Babies F | Babies Vol | Babies Total |
+ * Grand Male | Grand Female | Grand Vol | Grand Total | Notes
+ *
+ * MIGRATION NOTE (existing deployments):
+ * If your sheet was created before volunteer support, old rows keep their
+ * 19-column layout. New rows (after this update) will have 24 columns. To
+ * keep history clean, either start a fresh sheet or insert 5 empty columns
+ * for the Vol fields before submitting again.
  */
 
 // ── CONFIG ────────────────────────────────────────────────
@@ -73,12 +79,12 @@ function sendTelegramSummary(data) {
     `*Heirloom Attendance — Submitted*\n` +
     `📅 ${dateStr}\n` +
     `👤 ${by}\n\n` +
-    `*Main Service:* ${data.gym_total} (M ${data.gym_male} / F ${data.gym_female})\n` +
-    `*Kids:* ${data.kids_total} (M ${data.kids_male} / F ${data.kids_female})\n` +
-    `*Littles:* ${data.littles_total} (M ${data.littles_male} / F ${data.littles_female})\n` +
-    `*Babies:* ${data.babies_total} (M ${data.babies_male} / F ${data.babies_female})\n\n` +
+    `*Main Service:* ${data.gym_total} (M ${data.gym_male} / F ${data.gym_female} / Vol ${data.gym_volunteer || 0})\n` +
+    `*Kids:* ${data.kids_total} (M ${data.kids_male} / F ${data.kids_female} / Vol ${data.kids_volunteer || 0})\n` +
+    `*Littles:* ${data.littles_total} (M ${data.littles_male} / F ${data.littles_female} / Vol ${data.littles_volunteer || 0})\n` +
+    `*Babies:* ${data.babies_total} (M ${data.babies_male} / F ${data.babies_female} / Vol ${data.babies_volunteer || 0})\n\n` +
     `*Grand Total: ${data.grand_total}*\n` +
-    `Male ${data.grand_male}  |  Female ${data.grand_female}` +
+    `Male ${data.grand_male}  |  Female ${data.grand_female}  |  Vol ${data.grand_volunteer || 0}` +
     notes;
 
   const url = `https://api.telegram.org/bot${token}/sendMessage`;
@@ -106,6 +112,51 @@ function doGet(e) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
+/**
+ * MANUAL TEST — run this from the Apps Script editor (Run ▶ → testTelegram)
+ * Prints exactly why a Telegram send is failing. View output in Execution Log.
+ */
+function testTelegram() {
+  const props = PropertiesService.getScriptProperties();
+  const token = props.getProperty('TELEGRAM_BOT_TOKEN');
+  const chatId = props.getProperty('TELEGRAM_CHAT_ID');
+
+  console.log('TELEGRAM_BOT_TOKEN present:', !!token, token ? `(len ${token.length})` : '');
+  console.log('TELEGRAM_CHAT_ID present: ', !!chatId, chatId ? `(value ${chatId})` : '');
+
+  if (!token) { console.error('❌ Missing TELEGRAM_BOT_TOKEN in Script Properties'); return; }
+  if (!chatId) { console.error('❌ Missing TELEGRAM_CHAT_ID in Script Properties'); return; }
+
+  const url = `https://api.telegram.org/bot${token}/sendMessage`;
+  const res = UrlFetchApp.fetch(url, {
+    method: 'post',
+    contentType: 'application/json',
+    payload: JSON.stringify({
+      chat_id: chatId,
+      text: '✅ Heirloom Attendance — Telegram test message',
+      parse_mode: 'Markdown'
+    }),
+    muteHttpExceptions: true
+  });
+
+  const code = res.getResponseCode();
+  const body = res.getContentText();
+  console.log('HTTP', code);
+  console.log('Body:', body);
+
+  if (code === 200) {
+    console.log('✅ SUCCESS — check your Telegram');
+  } else if (code === 401) {
+    console.error('❌ Bad bot token (401 Unauthorized) — fix TELEGRAM_BOT_TOKEN');
+  } else if (code === 400 && body.includes('chat not found')) {
+    console.error('❌ Chat not found — open Telegram, message the bot, then /start it. TELEGRAM_CHAT_ID may be wrong.');
+  } else if (code === 403) {
+    console.error('❌ Bot blocked or user never started it — open Telegram and /start the bot.');
+  } else {
+    console.error('❌ Unknown error — see Body above');
+  }
+}
+
 function logAttendance(data) {
   const ss    = getSpreadsheet();
   let sheet   = ss.getSheetByName(SHEET_NAME);
@@ -115,16 +166,16 @@ function logAttendance(data) {
     sheet = ss.insertSheet(SHEET_NAME);
     sheet.appendRow([
       'Timestamp', 'Date', 'Submitted By',
-      'Main Service Male', 'Main Service Female', 'Main Service Total',
-      'Kids Male', 'Kids Female', 'Kids Total',
-      'Littles Male', 'Littles Female', 'Littles Total',
-      'Babies Male', 'Babies Female', 'Babies Total',
-      'Grand Male', 'Grand Female', 'Grand Total',
+      'Main Service Male', 'Main Service Female', 'Main Service Vol', 'Main Service Total',
+      'Kids Male', 'Kids Female', 'Kids Vol', 'Kids Total',
+      'Littles Male', 'Littles Female', 'Littles Vol', 'Littles Total',
+      'Babies Male', 'Babies Female', 'Babies Vol', 'Babies Total',
+      'Grand Male', 'Grand Female', 'Grand Vol', 'Grand Total',
       'Notes'
     ]);
 
     // Style header row
-    const header = sheet.getRange(1, 1, 1, 19);
+    const header = sheet.getRange(1, 1, 1, 24);
     header.setBackground('#435563');
     header.setFontColor('#ffffff');
     header.setFontWeight('bold');
@@ -132,24 +183,29 @@ function logAttendance(data) {
   }
 
   sheet.appendRow([
-    data.timestamp    || new Date().toISOString(),
-    data.date         || '',
-    data.submitted_by || '',
-    data.gym_male     || 0,
-    data.gym_female   || 0,
-    data.gym_total    || 0,
-    data.kids_male    || 0,
-    data.kids_female  || 0,
-    data.kids_total   || 0,
-    data.littles_male || 0,
-    data.littles_female || 0,
-    data.littles_total  || 0,
-    data.babies_male  || 0,
-    data.babies_female || 0,
-    data.babies_total  || 0,
-    data.grand_male   || 0,
-    data.grand_female || 0,
-    data.grand_total  || 0,
-    data.notes        || ''
+    data.timestamp        || new Date().toISOString(),
+    data.date             || '',
+    data.submitted_by     || '',
+    data.gym_male         || 0,
+    data.gym_female       || 0,
+    data.gym_volunteer    || 0,
+    data.gym_total        || 0,
+    data.kids_male        || 0,
+    data.kids_female      || 0,
+    data.kids_volunteer   || 0,
+    data.kids_total       || 0,
+    data.littles_male     || 0,
+    data.littles_female   || 0,
+    data.littles_volunteer|| 0,
+    data.littles_total    || 0,
+    data.babies_male      || 0,
+    data.babies_female    || 0,
+    data.babies_volunteer || 0,
+    data.babies_total     || 0,
+    data.grand_male       || 0,
+    data.grand_female     || 0,
+    data.grand_volunteer  || 0,
+    data.grand_total      || 0,
+    data.notes            || ''
   ]);
 }
