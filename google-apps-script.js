@@ -74,6 +74,7 @@ function sendTelegramSummary(data) {
   const dateStr = data.date || 'unknown date';
   const by      = data.submitted_by || 'Unknown';
   const notes   = data.notes ? `\n\n*Notes:* ${data.notes}` : '';
+  const COUNTER_URL = 'https://ricky11west.github.io/heirloom-attendance/';
 
   const msg =
     `*Heirloom Attendance — Submitted*\n` +
@@ -85,7 +86,8 @@ function sendTelegramSummary(data) {
     `*Babies:* ${data.babies_total} (M ${data.babies_male} / F ${data.babies_female} / Vol ${data.babies_volunteer || 0})\n\n` +
     `*Grand Total: ${data.grand_total}*\n` +
     `Male ${data.grand_male}  |  Female ${data.grand_female}  |  Vol ${data.grand_volunteer || 0}` +
-    notes;
+    notes +
+    `\n\n📲 [Open attendance counter](${COUNTER_URL})`;
 
   const url = `https://api.telegram.org/bot${token}/sendMessage`;
   try {
